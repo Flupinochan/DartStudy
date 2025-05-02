@@ -89,93 +89,206 @@ class _NewExpenseState extends State<NewExpense> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16, 48, 16, 16),
-      child: Column(
-        children: [
-          TextField(
-            controller: _titleController,
-            maxLength: 50,
-            decoration: InputDecoration(label: Text('Title')),
-            keyboardType: TextInputType.name,
-          ),
-          Row(
-            children: [
-              // expandedを2つ並べることで1:1比率となる
-              Expanded(
-                child: TextField(
-                  controller: _amountController,
-                  maxLength: 50,
-                  decoration: InputDecoration(
-                    label: Text('Amount'),
-                    prefixText: '\$ ',
-                  ),
-                  keyboardType: TextInputType.number,
-                ),
-              ),
-              SizedBox(width: 16),
-              Expanded(
-                child: Row(
-                  // Alignmentで行末尾に配置したり、縦方向中央ぞろえに可能
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      _selectedDate == null
-                          ? 'No date selected'
-                          : dateFormatter.format(_selectedDate!),
-                    ),
-                    IconButton(
-                      onPressed: _presentDatePicker,
-                      icon: Icon(Icons.calendar_month),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          Row(
-            children: [
-              DropdownButton(
-                value: _selectedCategory,
-                // Enumを.mapでListに変換
-                items:
-                    Category.values
-                        .map(
-                          (item) => DropdownMenuItem(
-                            value: item, // 表示するTextに応じたenumを取得
-                            child: Text(item.name.toUpperCase()), // 表示するText
+    // キーボードの高さを取得
+    final keyboardSpace = MediaQuery.of(context).viewInsets.bottom;
+
+    return LayoutBuilder(
+      builder: (buildContext, constrains) {
+        final width = constrains.maxWidth;
+        final height = constrains.maxHeight;
+
+        return SizedBox(
+          height: double.infinity,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16, 48, 16, keyboardSpace + 16),
+              child: Column(
+                children: [
+                  if (width >= 500)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _titleController,
+                            maxLength: 50,
+                            decoration: InputDecoration(label: Text('Title')),
+                            keyboardType: TextInputType.name,
                           ),
-                        )
-                        .toList(),
-                onChanged: (selectedValue) {
-                  setState(() {
-                    if (selectedValue == null) {
-                      return;
-                    }
-                    _selectedCategory = selectedValue;
-                  });
-                },
+                        ),
+                        SizedBox(width: 24),
+                        Expanded(
+                          child: TextField(
+                            controller: _amountController,
+                            maxLength: 50,
+                            decoration: InputDecoration(
+                              label: Text('Amount'),
+                              prefixText: '\$ ',
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    TextField(
+                      controller: _titleController,
+                      maxLength: 50,
+                      decoration: InputDecoration(label: Text('Title')),
+                      keyboardType: TextInputType.name,
+                    ),
+                  if (width >= 500)
+                    Row(
+                      children: [
+                        // expandedを2つ並べることで1:1比率となる
+                        DropdownButton(
+                          value: _selectedCategory,
+                          // Enumを.mapでListに変換
+                          items:
+                              Category.values
+                                  .map(
+                                    (item) => DropdownMenuItem(
+                                      value: item, // 表示するTextに応じたenumを取得
+                                      child: Text(
+                                        item.name.toUpperCase(),
+                                      ), // 表示するText
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged: (selectedValue) {
+                            setState(() {
+                              if (selectedValue == null) {
+                                return;
+                              }
+                              _selectedCategory = selectedValue;
+                            });
+                          },
+                        ),
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: Row(
+                            // Alignmentで行末尾に配置したり、縦方向中央ぞろえに可能
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                _selectedDate == null
+                                    ? 'No date selected'
+                                    : dateFormatter.format(_selectedDate!),
+                              ),
+                              IconButton(
+                                onPressed: _presentDatePicker,
+                                icon: Icon(Icons.calendar_month),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    Row(
+                      children: [
+                        // expandedを2つ並べることで1:1比率となる
+                        Expanded(
+                          child: TextField(
+                            controller: _amountController,
+                            maxLength: 50,
+                            decoration: InputDecoration(
+                              label: Text('Amount'),
+                              prefixText: '\$ ',
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: Row(
+                            // Alignmentで行末尾に配置したり、縦方向中央ぞろえに可能
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                _selectedDate == null
+                                    ? 'No date selected'
+                                    : dateFormatter.format(_selectedDate!),
+                              ),
+                              IconButton(
+                                onPressed: _presentDatePicker,
+                                icon: Icon(Icons.calendar_month),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  SizedBox(height: 16),
+                  if (width >= 500)
+                    Row(
+                      children: [
+                        Spacer(), // SpaceBetweenの役割
+                        ElevatedButton(
+                          onPressed: () {
+                            // contextを取り除くことで、modalが閉じる
+                            // contextはwidgetのツリーノード状態
+                            Navigator.pop(context);
+                          },
+                          child: Text('Cancel'),
+                        ),
+                        SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: _submitExpenseData,
+                          child: Text('Save Expense'),
+                        ),
+                      ],
+                    )
+                  else
+                    Row(
+                      children: [
+                        DropdownButton(
+                          value: _selectedCategory,
+                          // Enumを.mapでListに変換
+                          items:
+                              Category.values
+                                  .map(
+                                    (item) => DropdownMenuItem(
+                                      value: item, // 表示するTextに応じたenumを取得
+                                      child: Text(
+                                        item.name.toUpperCase(),
+                                      ), // 表示するText
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged: (selectedValue) {
+                            setState(() {
+                              if (selectedValue == null) {
+                                return;
+                              }
+                              _selectedCategory = selectedValue;
+                            });
+                          },
+                        ),
+                        Spacer(), // SpaceBetweenの役割
+                        ElevatedButton(
+                          onPressed: () {
+                            // contextを取り除くことで、modalが閉じる
+                            // contextはwidgetのツリーノード状態
+                            Navigator.pop(context);
+                          },
+                          child: Text('Cancel'),
+                        ),
+                        SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: _submitExpenseData,
+                          child: Text('Save Expense'),
+                        ),
+                      ],
+                    ),
+                ],
               ),
-              Spacer(), // SpaceBetweenの役割
-              ElevatedButton(
-                onPressed: () {
-                  // contextを取り除くことで、modalが閉じる
-                  // contextはwidgetのツリーノード状態
-                  Navigator.pop(context);
-                },
-                child: Text('Cancel'),
-              ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: _submitExpenseData,
-                child: Text('Save Expense'),
-              ),
-            ],
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

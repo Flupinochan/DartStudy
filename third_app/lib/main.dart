@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+// import 'package:flutter/cupertino.dart';  // IOS用のUIにしたい場合
+// if (Platform.isIOS) でチェック可能
+
+// import 'package:flutter/services.dart'; // 画面の向きを設定するライブラリ
+
 import 'package:third_app/expenses.dart';
 
 // グローバル変数の命名規則は、「k」から始める
@@ -9,7 +14,11 @@ var kDarkColorScheme = ColorScheme.fromSeed(
   seedColor: Color.fromARGB(255, 5, 99, 125),
 );
 
-void main() {
+Future<void> main() async {
+  // デバイスの向きを固定
+  // WidgetsFlutterBinding.ensureInitialized();
+  // await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
   // デフォルトでuseMaterial3というバージョン3のテーマが適用されている
   runApp(
     MaterialApp(
