@@ -1,23 +1,41 @@
 import 'package:fifth_app/models/meal.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fifth_app/providers/favorite_provider.dart';
 
-class MealDetailsScreen extends StatelessWidget {
-  const MealDetailsScreen(this.meal, this.onToggleFavorite, {super.key});
+// providerの関数を利用する場合は、statefulでないので、ConsumerWidgetでok
+class MealDetailsScreen extends ConsumerWidget {
+  const MealDetailsScreen(this.meal, {super.key});
 
   final Meal meal;
-  final void Function(Meal meal) onToggleFavorite;
 
+  // WidgetRefを追加 ※ConsumerStateの場合はグローバルにrefが利用できるため不要
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final favoriteMeals = ref.watch(favoriteMealsProvider);
+    final isFavorite = favoriteMeals.contains(meal);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(meal.title),
         actions: [
           IconButton(
             onPressed: () {
-              onToggleFavorite(meal);
+              // providerの関数を実行
+              final wasAdded = ref
+                  .read(favoriteMealsProvider.notifier)
+                  .toggleMealFavoriteStatus(meal);
+
+              ScaffoldMessenger.of(context).clearSnackBars();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    wasAdded ? 'Meal added as a favorite.' : 'Meal removed.',
+                  ),
+                ),
+              );
             },
-            icon: Icon(Icons.star),
+            icon: Icon(isFavorite ? Icons.star : Icons.star_border),
           ),
         ],
       ),

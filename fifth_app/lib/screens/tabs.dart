@@ -1,11 +1,12 @@
-import 'package:fifth_app/data/dummy_data.dart';
-import 'package:fifth_app/models/meal.dart';
 import 'package:fifth_app/screens/categories.dart';
 import 'package:fifth_app/screens/filters.dart';
 import 'package:fifth_app/screens/meals.dart';
 import 'package:fifth_app/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fifth_app/providers/favorite_provider.dart';
+import 'package:fifth_app/providers/filters_provider.dart';
 
 const kInitialFilters = {
   Filters.glutenFree: false,
@@ -14,41 +15,18 @@ const kInitialFilters = {
   Filters.vegan: false,
 };
 
-class TabsScreen extends StatefulWidget {
+// ConsumerStatefulWidgetは、river podの機能(provider)が利用可能になるWidget
+class TabsScreen extends ConsumerStatefulWidget {
   const TabsScreen({super.key});
 
   @override
-  State<TabsScreen> createState() => _TabsScreenState();
+  // ConsumerState
+  ConsumerState<TabsScreen> createState() => _TabsScreenState();
 }
 
-class _TabsScreenState extends State<TabsScreen> {
+// ConsumerState
+class _TabsScreenState extends ConsumerState<TabsScreen> {
   int _selectedPageIndex = 0;
-  // お気に入りリストは、上位のTabScreenで管理
-  final List<Meal> _favoriteMeals = [];
-  Map<Filters, bool> _selectedFilters = kInitialFilters;
-
-  void _showInfoMessage(String message) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  void _toggleMealFavoriteStatus(Meal meal) {
-    final isExisting = _favoriteMeals.contains(meal);
-
-    if (isExisting) {
-      setState(() {
-        _favoriteMeals.remove(meal);
-        _showInfoMessage('Removed from favorites.');
-      });
-    } else {
-      setState(() {
-        _favoriteMeals.add(meal);
-        _showInfoMessage('Marked as favorite!');
-      });
-    }
-  }
 
   void _selectPage(int index) {
     setState(() {
@@ -60,46 +38,23 @@ class _TabsScreenState extends State<TabsScreen> {
     Navigator.of(context).pop();
     if (identifier == 'filters') {
       // 遷移先でpopする際の引数をresultで受け取る ※pushのみでpushReplacementでは受け取れない
-      final result = await Navigator.of(context).push<Map<Filters, bool>>(
-        MaterialPageRoute(builder: (ctx) => FiltersScreen(_selectedFilters)),
+      await Navigator.of(context).push<Map<Filters, bool>>(
+        MaterialPageRoute(builder: (ctx) => FiltersScreen()),
       );
-
-      setState(() {
-        _selectedFilters = result ?? kInitialFilters;
-      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final availableMeals =
-        dummyMeals.where((meal) {
-          if (_selectedFilters[Filters.glutenFree]! && !meal.isGlutenFree) {
-            return false;
-          }
-          if (_selectedFilters[Filters.lactoseFree]! && !meal.isLactoseFree) {
-            return false;
-          }
-          if (_selectedFilters[Filters.vegetarian]! && !meal.isVegetarian) {
-            return false;
-          }
-          if (_selectedFilters[Filters.vegan]! && !meal.isVegan) {
-            return false;
-          }
-          return true;
-        }).toList();
+    // provider使用例 watchでProviderの値を取得、状態が変わるたびに再ビルドする (GraphQLのSubscriptionと同じ)
+    final availableMeals = ref.watch(filteredMealsProvider);
 
-    Widget activePage = CategoriesScreen(
-      availableMeals,
-      _toggleMealFavoriteStatus,
-    );
+    Widget activePage = CategoriesScreen(availableMeals);
     var activePageTitle = 'Categories';
 
     if (_selectedPageIndex == 1) {
-      activePage = MealsScreen(
-        meals: _favoriteMeals,
-        onToggleFavorite: _toggleMealFavoriteStatus,
-      );
+      final favoriteMeals = ref.watch(favoriteMealsProvider);
+      activePage = MealsScreen(meals: favoriteMeals);
       activePageTitle = 'Favorites';
     }
 

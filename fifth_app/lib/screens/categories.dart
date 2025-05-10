@@ -6,14 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:fifth_app/data/dummy_data.dart';
 
 class CategoriesScreen extends StatelessWidget {
-  const CategoriesScreen(
-    this.availableMeals,
-    this.onToggleFavorite, {
-    super.key,
-  });
+  const CategoriesScreen(this.availableMeals, {super.key});
 
   final List<Meal> availableMeals;
-  final void Function(Meal meal) onToggleFavorite;
 
   // Navigator push でWidgetを遷移したら、自動的にappBarに←Buttonが追加される
   void _selectCategory(BuildContext context, Category category) {
@@ -25,11 +20,7 @@ class CategoriesScreen extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder:
-            (ctx) => MealsScreen(
-              title: category.title,
-              meals: filteredMeals,
-              onToggleFavorite: onToggleFavorite,
-            ),
+            (ctx) => MealsScreen(title: category.title, meals: filteredMeals),
       ),
     );
   }

@@ -26,3 +26,10 @@ linter:
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
+
+# setting river pod linter
+# execute lint
+# dart run custom_lint
+analyzer:
+  plugins:
+    - custom_lint

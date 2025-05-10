@@ -1,48 +1,27 @@
 // import 'package:fifth_app/screens/tabs.dart';
 // import 'package:fifth_app/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fifth_app/providers/filters_provider.dart';
 
-enum Filters { glutenFree, lactoseFree, vegetarian, vegan }
+class FiltersScreen extends ConsumerWidget {
+  const FiltersScreen({super.key});
 
-class FiltersScreen extends StatefulWidget {
-  const FiltersScreen(this.filters, {super.key});
-
-  final Map<Filters, bool> filters;
-
-  @override
-  State<FiltersScreen> createState() => _FiltersScreenState();
-}
-
-class _FiltersScreenState extends State<FiltersScreen> {
-  var _glutennFreeFilterSet = false;
-  var _lactoseFreeFilterSet = false;
-  var _vegetarianFilterSet = false;
-  var _veganFilterSet = false;
+  // ProviderでState管理すれば、基本的にStatefulWidgetは不要 ※再ビルドは、StatelessWidgetのref.watch()で可能
+  // build外(initState)で、1度だけ読み込まれる場合は、ref.read()
+  // build内(onPressed)で、Buttonで何度も実行される可能性がある場合は、ref.watch()
 
   @override
-  void initState() {
-    super.initState();
-    _glutennFreeFilterSet = widget.filters[Filters.glutenFree]!;
-    _lactoseFreeFilterSet = widget.filters[Filters.lactoseFree]!;
-    _vegetarianFilterSet = widget.filters[Filters.vegetarian]!;
-    _veganFilterSet = widget.filters[Filters.vegan]!;
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final activeFilters = ref.watch(filtersProvider);
 
-  @override
-  Widget build(BuildContext context) {
     // Scaffoldは、各画面共通の構造(スケルトン)の1つであり、一択
     // appBarやdrawerなどが付属していて便利
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
-          // 戻る操作が発生したときに値を返す
-          Navigator.of(context).pop({
-            Filters.glutenFree: _glutennFreeFilterSet,
-            Filters.lactoseFree: _lactoseFreeFilterSet,
-            Filters.vegetarian: _vegetarianFilterSet,
-            Filters.vegan: _veganFilterSet,
-          });
+          Navigator.of(context).pop();
         }
       },
       child: Scaffold(
@@ -71,11 +50,11 @@ class _FiltersScreenState extends State<FiltersScreen> {
           children: [
             // on/off切り替え機能(toggle button)付きのListItem
             SwitchListTile(
-              value: _glutennFreeFilterSet,
+              value: activeFilters[Filters.glutenFree]!,
               onChanged: (isChecked) {
-                setState(() {
-                  _glutennFreeFilterSet = isChecked;
-                });
+                ref
+                    .read(filtersProvider.notifier)
+                    .setFilter(Filters.glutenFree, isChecked);
               },
               title: Text('Gluten-free'),
               subtitle: Text('Only include gluten-free meals.'),
@@ -83,11 +62,11 @@ class _FiltersScreenState extends State<FiltersScreen> {
               contentPadding: EdgeInsets.only(left: 34, right: 22),
             ),
             SwitchListTile(
-              value: _lactoseFreeFilterSet,
+              value: activeFilters[Filters.lactoseFree]!,
               onChanged: (isChecked) {
-                setState(() {
-                  _lactoseFreeFilterSet = isChecked;
-                });
+                ref
+                    .read(filtersProvider.notifier)
+                    .setFilter(Filters.lactoseFree, isChecked);
               },
               title: Text('Lactose-free'),
               subtitle: Text('Only include lactose-free meals.'),
@@ -95,11 +74,11 @@ class _FiltersScreenState extends State<FiltersScreen> {
               contentPadding: EdgeInsets.only(left: 34, right: 22),
             ),
             SwitchListTile(
-              value: _vegetarianFilterSet,
+              value: activeFilters[Filters.vegetarian]!,
               onChanged: (isChecked) {
-                setState(() {
-                  _vegetarianFilterSet = isChecked;
-                });
+                ref
+                    .read(filtersProvider.notifier)
+                    .setFilter(Filters.vegetarian, isChecked);
               },
               title: Text('Vegetarian'),
               subtitle: Text('Only include vegetarian meals.'),
@@ -107,11 +86,11 @@ class _FiltersScreenState extends State<FiltersScreen> {
               contentPadding: EdgeInsets.only(left: 34, right: 22),
             ),
             SwitchListTile(
-              value: _veganFilterSet,
+              value: activeFilters[Filters.vegan]!,
               onChanged: (isChecked) {
-                setState(() {
-                  _veganFilterSet = isChecked;
-                });
+                ref
+                    .read(filtersProvider.notifier)
+                    .setFilter(Filters.vegan, isChecked);
               },
               title: Text('Vegan'),
               subtitle: Text('Only include vegan meals.'),

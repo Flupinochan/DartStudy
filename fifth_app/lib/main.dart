@@ -1,5 +1,6 @@
 import 'package:fifth_app/screens/tabs.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 
@@ -14,7 +15,8 @@ final theme = ThemeData(
 );
 
 void main() {
-  runApp(const App());
+  // river podの設定
+  runApp(const ProviderScope(child: App()));
 }
 
 class App extends StatelessWidget {
