@@ -35,13 +35,18 @@ class MealItem extends StatelessWidget {
         // html css absoluteに近い
         child: Stack(
           children: [
-            // placeholderの透明画像からimageの本体画像へフェードインする
-            FadeInImage(
-              placeholder: MemoryImage(kTransparentImage),
-              image: NetworkImage(meal.imageUrl),
-              fit: BoxFit.cover,
-              height: 200,
-              width: double.infinity,
+            // 複数のスクリーン間でAnimationさせるWidget ※Heroで子WidgetをWrapする
+            // 例えば複数のスクリーンで同じ画像がある場合に、その2つの画像をつなぐアニメーション作成することが可能
+            Hero(
+              // placeholderの透明画像からimageの本体画像へフェードインする
+              tag: meal.id,
+              child: FadeInImage(
+                placeholder: MemoryImage(kTransparentImage),
+                image: NetworkImage(meal.imageUrl),
+                fit: BoxFit.cover,
+                height: 200,
+                width: double.infinity,
+              ),
             ),
             // FadeInImageの上にWidgetを配置
             Positioned(
